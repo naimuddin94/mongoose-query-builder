@@ -1,7 +1,16 @@
 {
-  "name": "mongoose-query-builder",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "mongoose-query-builders",
+  "version": "1.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/naimuddin94/mongoose-query-builder.git"
+  },
+  "homepage": "https://github.com/naimuddin94/mongoose-query-builder#readme",
+  "bugs": {
+    "url": "https://github.com/naimuddin94/mongoose-query-builder/issues"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts"
   },
@@ -21,11 +30,7 @@
   "author": "Md Naim Uddin",
   "license": "ISC",
   "description": "A lightweight, chainable query builder utility for Mongoose that supports search, filter, sort, field selection, and pagination.",
-  "devDependencies": {
-    "tsup": "^8.5.0",
-    "typescript": "^5.8.3"
-  },
-  "dependencies": {
+  "peerDependencies": {
     "mongoose": "^8.15.0"
   }
 }

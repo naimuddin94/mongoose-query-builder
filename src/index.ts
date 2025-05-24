@@ -9,7 +9,7 @@ class QueryBuilder<T> {
     this.query = query;
   }
 
-  search(searchableFields: string[]) {
+  search<K extends keyof T>(searchableFields: K[]) {
     const searchTerm = this?.query?.searchTerm;
     if (searchTerm) {
       this.modelQuery = this.modelQuery.find({
@@ -26,7 +26,7 @@ class QueryBuilder<T> {
 
   filter() {
     const queryObject = { ...this.query };
-    const excludeFields = ['searchTerm', 'sort', 'page', 'limit', 'fields'];
+    const excludeFields = ['searchTerm', 'sort', 'page', 'limit', 'fields'] as const;
 
     excludeFields.forEach((field) => delete queryObject[field]);
 
