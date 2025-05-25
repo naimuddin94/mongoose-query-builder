@@ -43,9 +43,19 @@ var QueryBuilder = class {
   }
   filter() {
     const queryObject = { ...this.query };
-    const excludeFields = ["searchTerm", "sort", "page", "limit", "fields"];
+    const excludeFields = [
+      "searchTerm",
+      "sort",
+      "page",
+      "limit",
+      "fields"
+    ];
     excludeFields.forEach((field) => delete queryObject[field]);
-    this.modelQuery = this.modelQuery.find(queryObject);
+    const queryStr = JSON.stringify(queryObject).replace(
+      /\b(gte|gt|lte|lt|ne|in|nin)\b/g,
+      (match) => `$${match}`
+    );
+    this.modelQuery = this.modelQuery.find(JSON.parse(queryStr));
     return this;
   }
   sort() {

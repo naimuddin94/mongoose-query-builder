@@ -1,4 +1,4 @@
-import { FilterQuery, Query } from 'mongoose';
+import { FilterQuery, Query } from "mongoose";
 
 class QueryBuilder<T> {
   public modelQuery: Query<T[], T>;
@@ -15,7 +15,7 @@ class QueryBuilder<T> {
       this.modelQuery = this.modelQuery.find({
         $or: searchableFields.map((field) => {
           return {
-            [field]: { $regex: searchTerm, $options: 'i' },
+            [field]: { $regex: searchTerm, $options: "i" },
           } as FilterQuery<T>;
         }),
       });
@@ -26,17 +26,27 @@ class QueryBuilder<T> {
 
   filter() {
     const queryObject = { ...this.query };
-    const excludeFields = ['searchTerm', 'sort', 'page', 'limit', 'fields'] as const;
-
+    const excludeFields = [
+      "searchTerm",
+      "sort",
+      "page",
+      "limit",
+      "fields",
+    ] as const;
     excludeFields.forEach((field) => delete queryObject[field]);
 
-    this.modelQuery = this.modelQuery.find(queryObject as FilterQuery<T>);
+    // Handle operators like gte, lte, etc.
+    const queryStr = JSON.stringify(queryObject).replace(
+      /\b(gte|gt|lte|lt|ne|in|nin)\b/g,
+      (match) => `$${match}`
+    );
 
+    this.modelQuery = this.modelQuery.find(JSON.parse(queryStr));
     return this;
   }
 
   sort() {
-    const sort = this.query?.sort || '-createdAt';
+    const sort = this.query?.sort || "-createdAt";
 
     this.modelQuery = this.modelQuery.sort(sort as string);
     return this;
@@ -52,7 +62,7 @@ class QueryBuilder<T> {
     return this;
   }
   fields() {
-    const fields = (this?.query?.fields as string)?.split(',')?.join(' ');
+    const fields = (this?.query?.fields as string)?.split(",")?.join(" ");
 
     this.modelQuery = this.modelQuery.select(fields);
     return this;

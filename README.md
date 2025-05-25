@@ -1,70 +1,49 @@
-# mongoose-query-builders
+# 📘 Mongoose Query Builder
 
-A lightweight, chainable query builder utility for **Mongoose** that supports **search**, **filter**, **sort**, **field selection**, and **pagination**. Ideal for building scalable backend APIs with minimal effort and clean code.
+A lightweight, chainable query builder utility for Mongoose that supports:
 
-> ✅ Built with TypeScript  
-> ✅ Compatible with Mongoose v8+  
-> ✅ Zero dependency  
-> ✅ Easily chainable and extensible
+* 🔍 Search
+* 🎯 Filtering (including advanced operators)
+* 🔃 Sorting
+* 🧪 Field selection
+* 📄 Pagination
+
+Designed to be easy to integrate into Express/Mongoose-based APIs.
 
 ---
 
-## 📦 Installation
+## 🚀 Installation
 
 ### Using npm
 
 ```
-  npm install mongoose-query-builders
+npm install mongoose-query-builders
 ```
 
 ### Using yarn
 
 ```
-  yarn add mongoose-query-builders
+yarn add mongoose-query-builders
 ```
-
-> ⚠️ **Peer Dependency:** Requires `mongoose@^8.15.0` to be installed in your project.
 
 ---
 
-## 🚀 Features
-
-- 🔍 **Search**: Perform case-insensitive search across multiple fields.
-- 🔧 **Filter**: Filter by any field(s) based on incoming query parameters.
-- 🔃 **Sort**: Sort results by any field (asc/desc).
-- 🎯 **Field Selection**: Select only specific fields to return in results.
-- 📄 **Pagination**: Simple page/limit-based pagination.
-- 📊 **Metadata**: Get total count and total pages easily.
-
----
-
-## 🧑‍💻 Usage
-
-### 1. Initialize `QueryBuilder`
+## 🛠️ Usage
 
 ```ts
-import QueryBuilder from "mongoose-query-builders";
-```
+import QueryBuilder from 'mongoose-query-builders';
+import { Product } from './models/product.model';
 
-### 2. Example Usage in Controller/Service
-
-```ts
-import { Auth } from "../models/auth.model"; // Your Mongoose model
-import QueryBuilder from "mongoose-query-builders";
-
-const fetchUsersFromDB = async (query: Record<string, unknown>) => {
-  const userQuery = new QueryBuilder(
-    Auth.find({ isBlocked: false, isVerified: true }),
-    query
-  )
-    .search(["fullName", "id", "address"]) // Searchable fields
+const fetchProducts = async (query: Record<string, unknown>) => {
+  const queryBuilder = new QueryBuilder(Product.find(), query)
+    .search(['name', 'description'])
     .filter()
     .sort()
     .fields()
     .paginate();
 
-  const data = await userQuery.modelQuery;
-  const meta = await userQuery.countTotal();
+  const data = await queryBuilder.modelQuery;
+  const meta = await queryBuilder.countTotal();
 
   return { data, meta };
 };
@@ -72,115 +51,134 @@ const fetchUsersFromDB = async (query: Record<string, unknown>) => {
 
 ---
 
-## 🧱 API Methods
+## 🔍 Search
 
-### `new QueryBuilder(queryModel, queryParams)`
+Performs case-insensitive regex search on specified fields.
 
-| Parameter     | Type                      | Description                                |
-| ------------- | ------------------------- | ------------------------------------------ |
-| `queryModel`  | `Query<T[], T>`           | Mongoose query object                      |
-| `queryParams` | `Record<string, unknown>` | The `req.query` from Express or equivalent |
+**Example:**
 
----
-
-### `.search(searchableFields: (keyof T)[])`
-
-Search across given fields using `$regex` (case-insensitive).
-
-```ts
-.search(['name', 'email']);
+```
+GET /products?searchTerm=phone
 ```
 
+This will match any product whose `name` or `description` contains `phone`.
+
 ---
 
-### `.filter()`
+## 🎯 Filter (with Advanced Operators)
 
-Removes pagination, sort, and other meta fields and applies filtering using remaining query params.
+Supports filtering directly using fields AND advanced MongoDB operators:
 
-```ts
-.filter();
+### Supported Operators:
+
+| Operator | Description           | Example Param                    | Translates to                                     |
+| -------- | --------------------- | -------------------------------- | ------------------------------------------------- |
+| `gte`    | Greater than or equal | `price[gte]=100`                 | `{ price: { $gte: 100 } }`                        |
+| `lte`    | Less than or equal    | `createdAt[lte]=2024-01-01`      | `{ createdAt: { $lte: ... } }`                    |
+| `gt`     | Greater than          | `rating[gt]=4`                   | `{ rating: { $gt: 4 } }`                          |
+| `lt`     | Less than             | `discount[lt]=20`                | `{ discount: { $lt: 20 } }`                       |
+| `ne`     | Not equal             | `status[ne]=archived`            | `{ status: { $ne: 'archived' } }`                 |
+| `in`     | In array              | `category[in]=books,electronics` | `{ category: { $in: ['books', 'electronics'] } }` |
+| `nin`    | Not in array          | `tags[nin]=clearance,sale`       | `{ tags: { $nin: ['clearance', 'sale'] } }`       |
+
+### Example:
+
+```
+GET /products?price[gte]=100&createdAt[lt]=2024-01-01&status=active
 ```
 
+This query filters all products:
+
+* `price >= 100`
+* `createdAt < 2024-01-01`
+* `status === 'active'`
+
 ---
 
-### `.sort()`
+## 🔃 Sort
 
-Sorts results. Defaults to `-createdAt` if none is provided.
+**Example:**
 
-```ts
-.sort();
+```
+GET /products?sort=price,-createdAt
 ```
 
+Sorts by `price` ascending and `createdAt` descending.
+Defaults to `-createdAt` if not provided.
+
 ---
 
-### `.fields()`
+## 🧪 Field Selection
 
-Limits returned fields. Use `?fields=name,email` to return only `name` and `email`.
+**Example:**
 
-```ts
-.fields();
+```
+GET /products?fields=name,price
 ```
 
+Returns only selected fields. Supports comma-separated fields.
+
 ---
 
-### `.paginate()`
+## 📄 Pagination
 
-Applies limit and skip. Defaults to `?page=1&limit=10`.
+**Example:**
 
-```ts
-.paginate();
+```
+GET /products?page=2&limit=20
 ```
 
+* `limit`: number of items per page (default: `10`)
+* `page`: page number (default: `1`)
+
+If `limit=0`, pagination is skipped and all results are returned.
+
 ---
 
-### `.countTotal()`
+## 📦 Meta Response
 
-Returns pagination metadata based on filters:
+Every query returns metadata using `.countTotal()`:
 
 ```ts
-const meta = await queryBuilder.countTotal();
-/*
 {
-  page: 1,
-  limit: 10,
-  total: 35,
-  totalPage: 4
+  page: number,
+  limit: number,
+  total: number,
+  totalPage: number
 }
-*/
 ```
 
 ---
 
-## 🧪 Example Query Parameters
+## 📚 Example with All Features
 
-```http
-GET /api/users?searchTerm=john&sort=name&limit=5&page=2&fields=fullName,email&role=admin
+```ts
+const queryBuilder = new QueryBuilder(Product.find(), req.query)
+  .search(['name'])
+  .filter()
+  .sort()
+  .fields(['name', 'price'])
+  .paginate();
+
+const data = await queryBuilder.modelQuery;
+const meta = await queryBuilder.countTotal();
 ```
 
-Will:
+---
 
-- Search `john` in `fullName`, `id`, and `address`
-- Filter by `role=admin`
-- Sort by `name`
-- Return only `fullName` and `email`
-- Return page 2 with 5 results per page
+## 👨‍💻 Author
+
+**Md Naim Uddin**
+[GitHub](https://github.com/naimuddin94)
 
 ---
 
-## 🛠 Contributing
+## 🪲 Issues & Contributions
 
-Contributions, issues and feature requests are welcome!  
-Feel free to check [issues page](https://github.com/naimuddin94/mongoose-query-builder/issues).
-
----
-
-## 📄 License
-
-ISC © [Md Naim Uddin](https://github.com/naimuddin94)
+Feel free to open [issues](https://github.com/naimuddin94/mongoose-query-builder/issues) or submit PRs.
 
 ---
 
-## 🔗 Links
+## 🧾 License
 
-- [GitHub Repository](https://github.com/naimuddin94/mongoose-query-builder)
-- [Issues](https://github.com/naimuddin94/mongoose-query-builder/issues)
+[ISC](./LICENSE)
