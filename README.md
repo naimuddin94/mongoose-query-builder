@@ -181,4 +181,4 @@ Feel free to open [issues](https://github.com/naimuddin94/mongoose-query-builder
 
 ## 🧾 License
 
-[ISC](./LICENSE)
+This project is licensed under the [ISC License](./LICENSE).
