@@ -11,8 +11,16 @@ A lightweight, chainable query builder utility for **Mongoose** that supports **
 
 ## 📦 Installation
 
-```bash
-npm install mongoose-query-builders
+### Using npm
+
+```
+  npm install mongoose-query-builders
+```
+
+### Using yarn
+
+```
+  yarn add mongoose-query-builders
 ```
 
 > ⚠️ **Peer Dependency:** Requires `mongoose@^8.15.0` to be installed in your project.
@@ -35,21 +43,21 @@ npm install mongoose-query-builders
 ### 1. Initialize `QueryBuilder`
 
 ```ts
-import QueryBuilder from 'mongoose-query-builders';
+import QueryBuilder from "mongoose-query-builders";
 ```
 
 ### 2. Example Usage in Controller/Service
 
 ```ts
-import { Auth } from '../models/auth.model'; // Your Mongoose model
-import QueryBuilder from 'mongoose-query-builders';
+import { Auth } from "../models/auth.model"; // Your Mongoose model
+import QueryBuilder from "mongoose-query-builders";
 
 const fetchUsersFromDB = async (query: Record<string, unknown>) => {
   const userQuery = new QueryBuilder(
     Auth.find({ isBlocked: false, isVerified: true }),
     query
   )
-    .search(['fullName', 'id', 'address']) // Searchable fields
+    .search(["fullName", "id", "address"]) // Searchable fields
     .filter()
     .sort()
     .fields()
@@ -68,10 +76,10 @@ const fetchUsersFromDB = async (query: Record<string, unknown>) => {
 
 ### `new QueryBuilder(queryModel, queryParams)`
 
-| Parameter      | Type                     | Description                           |
-|----------------|--------------------------|---------------------------------------|
-| `queryModel`   | `Query<T[], T>`          | Mongoose query object                 |
-| `queryParams`  | `Record<string, unknown>`| The `req.query` from Express or equivalent |
+| Parameter     | Type                      | Description                                |
+| ------------- | ------------------------- | ------------------------------------------ |
+| `queryModel`  | `Query<T[], T>`           | Mongoose query object                      |
+| `queryParams` | `Record<string, unknown>` | The `req.query` from Express or equivalent |
 
 ---
 
@@ -100,7 +108,6 @@ Removes pagination, sort, and other meta fields and applies filtering using rema
 Sorts results. Defaults to `-createdAt` if none is provided.
 
 ```ts
-// ?sort=name or ?sort=-createdAt
 .sort();
 ```
 
@@ -151,6 +158,7 @@ GET /api/users?searchTerm=john&sort=name&limit=5&page=2&fields=fullName,email&ro
 ```
 
 Will:
+
 - Search `john` in `fullName`, `id`, and `address`
 - Filter by `role=admin`
 - Sort by `name`
