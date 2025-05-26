@@ -161,23 +161,6 @@ Every query returns metadata using `.countTotal()`:
   totalPage: number
 }
 ```
-
----
-
-## 📚 Example with All Features
-
-```ts
-const queryBuilder = new QueryBuilder(Product.find(), req.query)
-  .search(['name'])
-  .filter()
-  .sort()
-  .fields(['name', 'price'])
-  .paginate();
-
-const data = await queryBuilder.modelQuery;
-const meta = await queryBuilder.countTotal();
-```
-
 ---
 
 ## 👨‍💻 Author
