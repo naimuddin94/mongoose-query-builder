@@ -32,20 +32,34 @@ yarn add mongoose-query-builders
 
 ```ts
 import QueryBuilder from 'mongoose-query-builders';
-import { Product } from './models/product.model';
+import Project from './project.model';
+/**
+ * List of fields in the Project model that are allowed for search operations.
+ * 
+ * This array is used by the `QueryBuilder` to determine which fields
+ * can be included in search queries, such as text-based filtering.
+ * 
+ * ✅ Make sure the keys listed here are valid keys in the IProject interface.
+ * ✅ This can be imported and reused in other services or controller layers
+ *    that implement search functionality on the Project collection.
+ */
+export const projectSearchableFields: (keyof IProject)[] = ['title', 'subTitle'];
 
-const fetchProducts = async (query: Record<string, unknown>) => {
-  const queryBuilder = new QueryBuilder(Product.find(), query)
-    .search(['name', 'description'])
-    .filter()
-    .sort()
-    .fields()
-    .paginate();
+const fetchAllProjectsFromDB = async (query: Record<string, unknown>) => {
+  const projectQuery = new QueryBuilder(Project.find(), query)
+    .search(projectSearchableFields)  // or you can ['title', 'subTitle'] it will be suggest you
+    .filter()                         // Apply filters from query
+    .sort()                           // Apply sorting if specified
+    .paginate()                       // Apply pagination
+    .fields();                        // Limit fields returned
 
-  const data = await queryBuilder.modelQuery;
-  const meta = await queryBuilder.countTotal();
+  const result = await projectQuery.modelQuery;  // Final queried documents
+  const meta = await projectQuery.countTotal();  // Total count for pagination
 
-  return { data, meta };
+  return {
+    meta,
+    result,
+  };
 };
 ```
 
